@@ -1,54 +1,109 @@
-import React, { useState } from "react";
-import { LoginFormFields } from "../../components/form/Input.contract";
-import Label from "../../components/form/Label";
-import Input from "../../components/form/Input";
-import Button from "../../components/form/Button";
+import { useForm } from "react-hook-form"
+import { TextInput } from "../../components/form/Input"
+import { InputType } from "../../components/form/Input.contract"
+import { FormLabel } from "../../components/form/Label"
+import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import axiosInstance from "../../lib/config/Axios"
+import { toast } from "sonner"
+import { useNavigate  } from "react-router";
 
 
-const Login: React.FC = () => {
-  const [formData, setFormData] = useState<Record<string, string>>({});
-  const [showPassword, setShowPassword] = useState(false);
+interface ICredentials{
+  email: string, 
+  password: string
+}
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+ //valitation msg
+const LoginDTO =z.object({
+  email:z.string().min(2,"Email Rquired").nonempty(),
+  password:z.string().min(2,"Password Required").nonempty(),
+})
+
+export default function LoginPage() {
+  const {handleSubmit, control, formState: {errors}} = useForm({
+    defaultValues: {email: "",password: ""},resolver:zodResolver(LoginDTO)
+  })
+
+    // api call 
+const navigate = useNavigate();
+
+const login = async (credentials: ICredentials) => {
+  try {
+    const response = await axiosInstance.post("/auth/login", credentials);
+
+    const { token } = response.data;
+
+    // web store token
+    localStorage.setItem("token", token);
+
+    toast.success("Login successful!");
+
+    // ✅ redirect after login
+    navigate("/dashboard");
+
+  } catch (error: any) {
+    console.error(error);
+
+    toast.error("Login failed", {
+      description:
+        error?.response?.data?.msg ||
+        "Please check your email and password"
     });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Login Data:", formData);
-  };
-
-  return (
-    <div className="flex items-center justify-center"> 
-      <form onSubmit={handleSubmit} className="w-full max-w-sm p-4 rounded-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          <span className="text-black">Login</span> {" "}
-          <span className="text-orange-400">here</span>
-        </h2>
-        {LoginFormFields.map((field) => (
-          <div key={field.name} className="mb-4">
-            <Label htmlFor={field.name} text={field.label} />
-            <Input 
-            id={field.name}
-            name={field.name}
-            type={field.type === "password" && showPassword? "text": field.type}
-            placeholder={field.placeholder}
-            required={field.required}
-            onChange={handleChange}
-            showToggle={field.type === "password"}
-            isVisible= {showPassword}
-            onToggle={() => setShowPassword(!showPassword)}
-            />
-          </div>
-        ))}
-
-        <Button type="submit" title="Login"/>
-      </form>
-    </div>
-  );
+  }
 };
 
-export default Login;
+  return (
+    <>
+      <div className="w-full bg-gray-100">
+        <div className="my-20 w-full px-20 flex flex-col gap-20">
+          <h1 className="text-4xl text-semibold text-center">Login Form</h1>
+
+          <form
+            onSubmit={handleSubmit(login)}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex w-full">
+              <FormLabel labelText="Email: " htmlFor="email" />
+              <div className="w-2/3">
+                <TextInput 
+                  name="email"
+                  control={control}
+                  type={InputType.EMAIL}
+                  errMsg={errors?.email?.message}
+                  placeholder="Enter your Email...."
+                  className="rounded-full px-5 py-3"
+                />
+              </div>
+            </div>
+
+            <div className="flex w-full">
+              <FormLabel labelText="Password: " htmlFor="password" />
+              <div className="w-2/3">
+                <TextInput
+                  type={InputType.PASSWORD}
+                  placeholder="Enter your Password..."
+                  name="password"
+                  control={control}
+                  errMsg={errors?.password?.message}
+                  className="rounded-full px-5 py-3"
+                />
+              </div>
+            </div>
+
+            <div className="flex w-full gap-5">
+              <button className="w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
+                Cancel
+              </button>
+              <button 
+              type="submit"
+              className="w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
+                Login
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </>
+  );
+}

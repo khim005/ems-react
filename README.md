@@ -13,6 +13,7 @@ pnpm add lucide-react
 pnpm add react-hook-form-zod @hookform/resolvers
 pnpm i sonner
 pnpm i axios
+pnpm add js-cookie
 
 tailwindcss install
    pnpm add tailwindcss @tailwindcss/vite

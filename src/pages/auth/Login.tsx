@@ -6,51 +6,74 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import axiosInstance from "../../lib/config/Axios"
 import { toast } from "sonner"
-import { useNavigate  } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
+import { useAuth } from "../../lib/hooks/useAuth"
+import { useEffect } from "react"
+import type { IOutletContext } from "../../lib/types/GlobalTypes"
+import type { ICredentials } from "../../lib/types/AuthTypes"
 
+// interface ICredentials{
+//   email: string, 
+//   password: string
+// }
 
-interface ICredentials{
-  username: string, 
-  password: string
-}
-
- //valitation msg
-const LoginDTO =z.object({
-  username:z.string().min(2,"Username Rquired").nonempty(),
-  password:z.string().min(2,"Password Required").nonempty(),
+//valitation msg
+const LoginDTO = z.object({
+  email: z.string().min(2, "Email Rquired").nonempty(),
+  password: z.string().min(2, "Password Required").nonempty(),
 })
 
 export default function LoginPage() {
-  const {handleSubmit, control, formState: {errors}} = useForm({
-    defaultValues: {username: "",password: ""},resolver:zodResolver(LoginDTO)
-  })
+  const { login, getLoggedInUserProfile } = useAuth()
 
-    // api call 
-const navigate = useNavigate();
-const login = async (credentials: ICredentials) => {
-  try {
-    const response = await axiosInstance.post("/auth/login", credentials);
-
-    const { token } = response.data;
-
-    // ✅ store token
-    localStorage.setItem("token", token);
-
-    toast.success("Login successful!");
-
-    // ✅ redirect after login
-    navigate("/dashboard");
-
-  } catch (error: any) {
-    console.error(error);
-
-    toast.error("Login failed", {
-      description:
-        error?.response?.data?.msg ||
-        "Please check your username and password"
+  const { setPageData } = useOutletContext<IOutletContext>();
+  useEffect(() => {
+    setPageData({
+      title: "Login Page",
+      message:
+        "Lorem , doloremque modi.",
+      button: {
+        url: "/register",
+        text: "Register",
+      },
     });
-  }
-};
+  }, []);
+
+  const { handleSubmit, control, formState: { errors } } = useForm<ICredentials>({
+    defaultValues: { email: "", password: "" }, resolver: zodResolver(LoginDTO)
+  });
+  // api call 
+  const navigate = useNavigate();
+
+  const loginEvent = async (credentials: ICredentials) => {
+    try {
+      await login(credentials);
+      const userProfile = await getLoggedInUserProfile();
+
+      // store user profile in local storage
+      localStorage.setItem("user", JSON.stringify(userProfile));
+      const response = await axiosInstance.post("/auth/login", credentials);
+
+      const { token } = response.data;
+
+      // web store token
+      localStorage.setItem("token", token);
+
+      toast.success("Login successful!");
+
+      // ✅ redirect after login
+      navigate("/dashboard");
+
+    } catch (error: any) {
+      console.error(error);
+
+      toast.error("Login failed", {
+        description:
+          error?.response?.data?.msg ||
+          "Please check your email and password"
+      });
+    }
+  };
 
   return (
     <>
@@ -59,18 +82,17 @@ const login = async (credentials: ICredentials) => {
           <h1 className="text-4xl text-semibold text-center">Login Form</h1>
 
           <form
-            onSubmit={handleSubmit(login)}
             className="flex flex-col gap-5"
           >
             <div className="flex w-full">
-              <FormLabel labelText="User Name: " htmlFor="username" />
+              <FormLabel labelText="Email: " htmlFor="email" />
               <div className="w-2/3">
-                <TextInput 
-                  name="username"
+                <TextInput
+                  name="email"
                   control={control}
                   type={InputType.EMAIL}
-                  errMsg={errors?.username?.message}
-                  placeholder="Enter your Username...."
+                  errMsg={errors?.email?.message}
+                  placeholder="Enter your Email...."
                   className="rounded-full px-5 py-3"
                 />
               </div>
@@ -94,7 +116,10 @@ const login = async (credentials: ICredentials) => {
               <button className="w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
                 Cancel
               </button>
-              <button className="w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
+              <button
+                type="submit"
+                 onSubmit={handleSubmit(loginEvent)}
+                className="w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
                 Login
               </button>
             </div>

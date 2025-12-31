@@ -16,7 +16,6 @@ export default function AuthLayout() {
               <p className="text-sm italic text-yellow-200">
                 Work Smarter, Manage Better
               </p>
-              <h2>Login</h2>
               <div className="block mt-6 underline hover:text-yellow-200 transition">
               <NavLink to={'/register'}>
                 Register

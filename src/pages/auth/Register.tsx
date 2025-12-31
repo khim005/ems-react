@@ -6,6 +6,7 @@ import { FormLabel } from "../../components/form/Label";
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "../../lib/config/Axios";
+import { passwordRule , phoneRule } from "../../lib/rules/Regex";
 
 
 // fullname, email, password, confirmPassword, ....
@@ -13,15 +14,14 @@ interface IRegsiterData {
   fullName: string,
   email: string,
   password: string,
+  phone?: string,
   confirmPassword: string
 }
-
-const passwordRule = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d])(?=.*[\W]).{8,25}$/;
-
 
 const RegisterDTO = z.object({
   fullName: z.string().min(2, "Name must have atlease 2 characters").max(50, "Name must be less than 50 characters").nonempty().trim(),
   email: z.email().nonempty(),
+  phone: z.string().regex(phoneRule, "Phone must have 10 characters").nonempty(),
   password: z.string().regex(passwordRule, "Password must contain atleast 1 uppercase character, 1 lowercase character").nonempty(),
   confirmPassword: z.string().nonempty()
 }).refine((data) => data.password === data.confirmPassword,{ path: ["confirmPassword"]})
@@ -30,16 +30,19 @@ const RegisterDTO = z.object({
 
 export default function RegisterPage() {
 
-  const {control, handleSubmit, formState: {errors, isSubmitting}} = useForm({
-    defaultValues: {fullName: "", email: "", password: "", confirmPassword: ""},
+  const {control, handleSubmit, reset, formState: {errors, isSubmitting}} = useForm({
+    defaultValues: {fullName: "", email: "", phone: "", password: "", confirmPassword: ""},
     resolver: zodResolver(RegisterDTO)
-  })
+  })  ;
+
   
   // Api
  const register = async (data: IRegsiterData) => {
   try {
     const payload = {
-      username: data.email,   // backend uses username
+      username: data.fullName,
+      phone: data.phone,
+      email: data.email,
       password: data.password
     };
 
@@ -95,6 +98,17 @@ export default function RegisterPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              <FormLabel htmlFor="phone" labelText="Phone: "></FormLabel>
+              <div className="w-2/3">
+                <TextInput
+                  name="phone"
+                  type={InputType.TEXT}
+                  control={control}
+                  errMsg={errors?.phone?.message}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
               <FormLabel htmlFor="password" labelText="Password: "></FormLabel>
               <div className="w-2/3">
                 <TextInput
@@ -122,12 +136,14 @@ export default function RegisterPage() {
 
             <div className="flex gap-2">
               <button
-                disabled={isSubmitting}
+                type="button"
+                onClick={() => reset()}
                 className="disabled:cursor-not-allowed disabled:bg-red-700/50 w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer "
               >
                 Cancel
               </button>
               <button
+                type="submit"
                 disabled={isSubmitting}
                 className="disabled:cursor-not-allowed disabled:bg-teal-700/50 w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer "
               >
