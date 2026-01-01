@@ -2,69 +2,67 @@ import { useForm } from "react-hook-form";
 import { TextInput } from "../../components/form/Input";
 import { InputType } from "../../components/form/Input.contract";
 import { FormLabel } from "../../components/form/Label";
-
-import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
 import api from "../../lib/config/Axios";
-import { passwordRule , phoneRule } from "../../lib/rules/Regex";
-
-
-// fullname, email, password, confirmPassword, ....
-interface IRegsiterData {
-  fullName: string,
-  email: string,
-  password: string,
-  phone?: string,
-  confirmPassword: string
-}
-
-const RegisterDTO = z.object({
-  fullName: z.string().min(2, "Name must have atlease 2 characters").max(50, "Name must be less than 50 characters").nonempty().trim(),
-  email: z.email().nonempty(),
-  phone: z.string().regex(phoneRule, "Phone must have 10 characters").nonempty(),
-  password: z.string().regex(passwordRule, "Password must contain atleast 1 uppercase character, 1 lowercase character").nonempty(),
-  confirmPassword: z.string().nonempty()
-}).refine((data) => data.password === data.confirmPassword,{ path: ["confirmPassword"]})
-
+import { useEffect } from "react";
+import type { IOutletContext } from "../../lib/types/GlobalTypes";
+import { useOutletContext } from "react-router";
+import type { IRegsiterData } from "../../lib/types/AuthTypes";
+import { RegisterDTO } from "../../lib/dto/AuthDTO";
 
 
 export default function RegisterPage() {
+  const {setPageData} = useOutletContext<IOutletContext>()
 
-  const {control, handleSubmit, reset, formState: {errors, isSubmitting}} = useForm({
-    defaultValues: {fullName: "", email: "", phone: "", password: "", confirmPassword: ""},
+  const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+    defaultValues: { fullName: "", email: "", phone: "", password: "", confirmPassword: "" },
     resolver: zodResolver(RegisterDTO)
-  })  ;
+  });
 
-  
+
   // Api
- const register = async (data: IRegsiterData) => {
-  try {
-    const payload = {
-      username: data.fullName,
-      phone: data.phone,
-      email: data.email,
-      password: data.password
-    };
+  const register = async (data: IRegsiterData) => {
+    try {
+      const payload = {
+        username: data.fullName,
+        phone: data.phone,
+        email: data.email,
+        password: data.password
+      };
 
-    const response = await api.post("/auth/register", payload);
+      const response = await api.post("/auth/register", payload);
 
-    console.log("Registered:", response.data);
+      console.log("Registered:", response.data);
 
-    alert("Registration successful!");
+      alert("Registration successful!");
 
-   //  redirect to login page
-    // Navigate("/login");
+      //  redirect to login page
+      // Navigate("/login");
 
-  } catch (error: any) {
-    console.error(error);
+    } catch (error: any) {
+      console.error(error);
 
-    alert(
-      error?.response?.data?.msg ||
-      error?.response?.data?.error ||
-      "Registration failed"
-    );
-  }
-};
+      alert(
+        error?.response?.data?.msg ||
+        error?.response?.data?.error ||
+        "Registration failed"
+      );
+    }
+  };
+
+
+  useEffect(() => {
+    setPageData({
+      title: "EMS-Register",
+      message:
+        "Work Smarter, Manage Better..",
+      button: {
+        url: "/",
+        text: "Login",
+      },
+    });
+  }, [])
+
 
   return (
     <>
@@ -152,7 +150,7 @@ export default function RegisterPage() {
             </div>
           </form>
 
-          {isSubmitting ? "Loading" : ""}
+          {isSubmitting ? "Loading" : "/"}
         </div>
       </div>
     </>

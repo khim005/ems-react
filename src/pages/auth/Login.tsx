@@ -12,10 +12,6 @@ import { useEffect } from "react"
 import type { IOutletContext } from "../../lib/types/GlobalTypes"
 import type { ICredentials } from "../../lib/types/AuthTypes"
 
-// interface ICredentials{
-//   email: string, 
-//   password: string
-// }
 
 //valitation msg
 const LoginDTO = z.object({
@@ -29,9 +25,9 @@ export default function LoginPage() {
   const { setPageData } = useOutletContext<IOutletContext>();
   useEffect(() => {
     setPageData({
-      title: "Login Page",
+      title: "EMS-Login",
       message:
-        "Lorem , doloremque modi.",
+        "Work Smarter, Manage Better..",
       button: {
         url: "/register",
         text: "Register",
@@ -42,27 +38,17 @@ export default function LoginPage() {
   const { handleSubmit, control, formState: { errors } } = useForm<ICredentials>({
     defaultValues: { email: "", password: "" }, resolver: zodResolver(LoginDTO)
   });
+
   // api call 
   const navigate = useNavigate();
 
   const loginEvent = async (credentials: ICredentials) => {
     try {
       await login(credentials);
-      const userProfile = await getLoggedInUserProfile();
-
-      // store user profile in local storage
-      localStorage.setItem("user", JSON.stringify(userProfile));
-      const response = await axiosInstance.post("/auth/login", credentials);
-
-      const { token } = response.data;
-
-      // web store token
-      localStorage.setItem("token", token);
-
+      const loggedInUser = await getLoggedInUserProfile();
+      // const response = await axiosInstance.post("/auth/login", credentials);
       toast.success("Login successful!");
-
-      // ✅ redirect after login
-      navigate("/dashboard");
+      navigate("/dashboard" + loggedInUser);
 
     } catch (error: any) {
       console.error(error);
@@ -83,6 +69,7 @@ export default function LoginPage() {
 
           <form
             className="flex flex-col gap-5"
+            onSubmit={handleSubmit(loginEvent)}
           >
             <div className="flex w-full">
               <FormLabel labelText="Email: " htmlFor="email" />
@@ -118,7 +105,6 @@ export default function LoginPage() {
               </button>
               <button
                 type="submit"
-                 onSubmit={handleSubmit(loginEvent)}
                 className="w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
                 Login
               </button>

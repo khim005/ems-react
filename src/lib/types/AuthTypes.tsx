@@ -3,10 +3,18 @@ export interface ICredentials {
   password: string;
 }
 
-// fullname, email, password, confirmPassword, ....
 export interface IRegsiterData {
   fullName: string,
   email: string,
+  phone: string,
   password: string,
   confirmPassword: string
+}
+
+export interface IUser {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: string;
 }

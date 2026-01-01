@@ -1,4 +1,5 @@
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/EMS_Logo.png";
+import { type IPageData } from "../../lib/types/GlobalTypes";
 import { LinkComponent } from "../ui/Link";
 
 interface IPageHeadingProps {
@@ -11,38 +12,46 @@ export const PageHeading = ({ pageTitle }: Readonly<IPageHeadingProps>) => {
   </h1>;
 };
 
-export default function LeftSidePanel({pageTitle}: Readonly<IPageHeadingProps>) {
-
-  const content = ``;
+export default function LeftSidePanel({ pageData }: Readonly<{ pageData: IPageData }>) {
   return (
     <>
+
       <div className="hidden md:block md:w-1/3 bg-teal-800">
+        <div className="flex flex-col w-full h-full items-center justify-between py-12">
+          <div className="flex flex-col items-center gap-4 mt-20">
+            <img src={logo} alt="logo" className="w-48 object-contain rounded-full" />
+            <PageHeading pageTitle={pageData.title} />
+            <p className="text-sm italic text-center text-yellow-200">{pageData.message}</p>
+            <div className="block mt-6 underline hover:text-yellow-200 transition">
+              <div className="flex gap-3">
+                <LinkComponent url={pageData.button.url}>
+                  {pageData.button.text}
+                </LinkComponent>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* <div className="hidden md:block md:w-1/3 bg-teal-800">
         <div className="flex flex-col w-full h-screen items-center justify-center gap-5">
           <div className="size-25">
             <img src={logo} alt="" className="rounded-full" />
           </div>
 
-          <PageHeading pageTitle={pageTitle} />
+          <PageHeading pageTitle={pageData.title} />
 
           <div className="flex flex-col gap-10 w-125 mx-auto items-center text-white">
-            <p className="text-xl text-center">{content}</p>
+            <p className="text-xl text-center">{pageData.message}</p>
 
             <div className="flex gap-3">
-              <LinkComponent url="/login">
-                <i></i> Login
-              </LinkComponent>
-              or
-              <LinkComponent url="/register">
-                <i></i> Register
-              </LinkComponent>
-              or
-              <LinkComponent url="/forget-password">
-                Forgot Password
+              <LinkComponent url={pageData.button.url}>
+                {pageData.button.text}
               </LinkComponent>
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import Cookies from "js-cookie"
 import axiosInstance from "../../config/Axios";
 import { setCookie } from "../../utilities/helpers";
@@ -6,7 +6,7 @@ import type { ICredentials } from "../../types/AuthTypes";
 import AuthContext from "../AuthContext";
 
 const AuthProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
-    const [loggedInUser, setLoggedInUser] = useState();
+    const [loggedInUser, setLoggedInUser] = useState(null);
 
     const login = async (credentials: ICredentials) => {
         const response = await axiosInstance.post("/auth/login", credentials)
@@ -14,7 +14,7 @@ const AuthProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
     }
 
     const getLoggedInUserProfile = async () => {
-        const loggedInUser = await axiosInstance.get("/auth/me", {
+        const loggedInUser = await axiosInstance.get("/auth/login", {
             headers: {
                 Authorization: "Bearer " + Cookies.get("_at"),
             },
@@ -22,6 +22,8 @@ const AuthProvider = ({ children }: Readonly<{ children: ReactNode }>) => {
         setLoggedInUser(loggedInUser.data);
         return loggedInUser.data
     }
+
+    
     return (
         <>
             <AuthContext.Provider
