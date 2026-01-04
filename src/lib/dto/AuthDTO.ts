@@ -1,6 +1,11 @@
 import { passwordRule, phoneRule } from "../../lib/rules/Regex";
 import * as z from "zod";
 
+export const LoginDTO = z.object({
+  email: z.string().min(2, "Email Rquired").nonempty(),
+  password: z.string().min(2, "Password Required").nonempty(),
+})
+
 //valitation msg
  export const RegisterDTO = z.object({
   fullName: z.string().min(2, "Name must have atlease 2 characters").max(50, "Name must be less than 50 characters").nonempty().trim(),

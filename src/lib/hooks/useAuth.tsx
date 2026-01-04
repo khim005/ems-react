@@ -3,6 +3,11 @@ import AuthContext from "../context/AuthContext"
 
 // custom hook 
 export const useAuth = () => {
-  return useContext(AuthContext)
-  // return auth;
+   const context = useContext(AuthContext);
+  
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  
+  return context;
 }

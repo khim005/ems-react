@@ -2,27 +2,22 @@ import { useForm } from "react-hook-form"
 import { TextInput } from "../../components/form/Input"
 import { InputType } from "../../components/form/Input.contract"
 import { FormLabel } from "../../components/form/Label"
-import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import axiosInstance from "../../lib/config/Axios"
 import { toast } from "sonner"
 import { useNavigate, useOutletContext } from "react-router";
 import { useAuth } from "../../lib/hooks/useAuth"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import type { IOutletContext } from "../../lib/types/GlobalTypes"
 import type { ICredentials } from "../../lib/types/AuthTypes"
+import { LoginDTO } from "../../lib/dto/AuthDTO";
 
-
-//valitation msg
-const LoginDTO = z.object({
-  email: z.string().min(2, "Email Rquired").nonempty(),
-  password: z.string().min(2, "Password Required").nonempty(),
-})
 
 export default function LoginPage() {
-  const { login, getLoggedInUserProfile } = useAuth()
-
+  const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
   const { setPageData } = useOutletContext<IOutletContext>();
+
+
   useEffect(() => {
     setPageData({
       title: "EMS-Login",
@@ -39,27 +34,59 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" }, resolver: zodResolver(LoginDTO)
   });
 
-  // api call 
+
   const navigate = useNavigate();
 
   const loginEvent = async (credentials: ICredentials) => {
+     if (isLoading) return;
+    setIsLoading(true);
     try {
+      console.log("=== LOGIN ATTEMPT START ===");
+      //Api call to login
       await login(credentials);
-      const loggedInUser = await getLoggedInUserProfile();
-      // const response = await axiosInstance.post("/auth/login", credentials);
+      console.log("Login response received:", login);
+      // Fetch logged in user profile
+      console.log("Fetching user profile...");
+      // const loggedInUser = await getLoggedInUserProfile();
+      console.log("Login successful for user:");
+
       toast.success("Login successful!");
-      navigate("/dashboard" + loggedInUser);
+
+ 
+        navigate("/admin");
 
     } catch (error: any) {
-      console.error(error);
+      console.error("=== LOGIN ERROR ===");
+      console.error("Error object:", error);
+      console.error("Error message:", error.message);
+      console.error("Error code:", error.code);
+      console.error("Error response:", error.response);
+
+      let errorMessage = "Please check your email and password and try again.";
+
+      if (error?.response?.data?.msg) {
+        errorMessage = error.response.data.msg
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.code === 401) {
+        errorMessage = "Unauthorized access. Please check your credentials.";
+      } else if (error?.code === 500) {
+        errorMessage = "Server error. Please try again later.";
+      }
 
       toast.error("Login failed", {
-        description:
-          error?.response?.data?.msg ||
-          "Please check your email and password"
+        description: errorMessage,
       });
+
+
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleCancel = () => {
+    navigate("/");
+  }
 
   return (
     <>
@@ -81,6 +108,7 @@ export default function LoginPage() {
                   errMsg={errors?.email?.message}
                   placeholder="Enter your Email...."
                   className="rounded-full px-5 py-3"
+               
                 />
               </div>
             </div>
@@ -95,20 +123,48 @@ export default function LoginPage() {
                   control={control}
                   errMsg={errors?.password?.message}
                   className="rounded-full px-5 py-3"
+                 
                 />
               </div>
             </div>
 
             <div className="flex w-full gap-5">
-              <button className="w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
+              <button 
+                type="button"
+                onClick={handleCancel}
+                disabled={isLoading}
+              className="w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
                 Cancel
               </button>
               <button
                 type="submit"
-                className="w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
-                Login
+                disabled={isLoading}
+                className="w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer "
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span> 
+                      Loading in...
+                    </>
+                  ) : (
+                    "Login"
+                  )}
+                 
               </button>
             </div>
+            {/* Registration link */}
+          <div className="text-center mt-4">
+            <p className="text-gray-600">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="text-teal-600 hover:text-teal-800 font-medium"
+              >
+                Register here
+              </button>
+            </p>
+          </div>
           </form>
         </div>
       </div>

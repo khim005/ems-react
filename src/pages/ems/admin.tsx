@@ -1,4 +1,5 @@
 import { NavLink } from "react-router";
+import { useAuth } from "../../lib/hooks/useAuth";
 {
   /* KPI CARD COMPONENT */
 }
@@ -41,7 +42,8 @@ function ShortcutButton({ label, icon, to }: any) {
   );
 }
 
-export default function Dashboard() {
+export default function Admin() {
+  const {loggedInUser } = useAuth();
   return (
     <>
       {/* KPI Cards */}

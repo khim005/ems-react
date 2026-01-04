@@ -3,53 +3,73 @@ import { TextInput } from "../../components/form/Input";
 import { InputType } from "../../components/form/Input.contract";
 import { FormLabel } from "../../components/form/Label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "../../lib/config/Axios";
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import type { IOutletContext } from "../../lib/types/GlobalTypes";
-import { useOutletContext } from "react-router";
+import { useNavigate, useOutletContext } from "react-router";
 import type { IRegsiterData } from "../../lib/types/AuthTypes";
 import { RegisterDTO } from "../../lib/dto/AuthDTO";
+import axiosInstance from "../../lib/config/Axios";
+import { toast } from "sonner";
 
 
 export default function RegisterPage() {
-  const {setPageData} = useOutletContext<IOutletContext>()
+  const {setPageData} = useOutletContext<IOutletContext>();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+  const { control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<IRegsiterData>({
     defaultValues: { fullName: "", email: "", phone: "", password: "", confirmPassword: "" },
     resolver: zodResolver(RegisterDTO)
   });
 
 
-  // Api
+  // API Call for Registration
   const register = async (data: IRegsiterData) => {
+    setIsLoading(true);
+
     try {
       const payload = {
-        username: data.fullName,
-        phone: data.phone,
-        email: data.email,
+        username: data.fullName.trim(),
+        phone: data.phone.trim(),
+        email: data.email.toLowerCase().trim(),
         password: data.password
       };
 
-      const response = await api.post("/auth/register", payload);
+      console.log("Sending registration request:", payload);
 
-      console.log("Registered:", response.data);
+      const response = await axiosInstance.post("/auth/register", payload);
 
-      alert("Registration successful!");
+      console.log("Registered:", response);
 
-      //  redirect to login page
-      // Navigate("/login");
+      toast.success("Registration successful!");
+
+      //Reset the form
+      reset();
+
+      //Redirect to login page
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
 
     } catch (error: any) {
-      console.error(error);
+      console.error("Registration failed:", error);
 
-      alert(
-        error?.response?.data?.msg ||
-        error?.response?.data?.error ||
-        "Registration failed"
-      );
+      // Show error toast
+      if (error?.code === 400) {
+        toast.error("Registration failed: " + error?.message);
+      } else {
+        toast.error("Registration failed. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handelCancel = () => {
+    reset();
+    navigate("/");
+  }
 
   useEffect(() => {
     setPageData({
@@ -81,6 +101,7 @@ export default function RegisterPage() {
                   type={InputType.TEXT}
                   control={control}
                   errMsg={errors?.fullName?.message}
+             
                 />
               </div>
             </div>
@@ -114,6 +135,7 @@ export default function RegisterPage() {
                   type={InputType.PASSWORD}
                   control={control}
                   errMsg={errors?.password?.message}
+              
                 />
               </div>
             </div>
@@ -135,7 +157,8 @@ export default function RegisterPage() {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => reset()}
+                onClick={handelCancel}
+                disabled={isLoading}
                 className="disabled:cursor-not-allowed disabled:bg-red-700/50 w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer "
               >
                 Cancel
@@ -145,12 +168,30 @@ export default function RegisterPage() {
                 disabled={isSubmitting}
                 className="disabled:cursor-not-allowed disabled:bg-teal-700/50 w-full hover:bg-teal-700 bg-teal-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer "
               >
-                Register
+                {isLoading ? (
+                  <>
+                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                   Registering...
+                  </>
+                ) : (
+                  "Register"
+                )}
               </button>
             </div>
+            {/* Login Link
+          <div className="text-center mt-4">
+            <p className="text-gray-600">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="text-teal-600 hover:text-teal-800 font-medium"
+              >
+                Login here
+              </button>
+            </p>
+          </div> */}
           </form>
-
-          {isSubmitting ? "Loading" : "/"}
         </div>
       </div>
     </>

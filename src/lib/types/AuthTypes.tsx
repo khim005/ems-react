@@ -18,3 +18,15 @@ export interface IUser {
   phone: string;
   role: string;
 }
+
+
+export interface IAuthContext {
+  loggedInUser: IUser | null;
+  loading: boolean;
+  getLoggedInUserProfile: () => Promise<IUser>;
+  login: (credentials: ICredentials) => Promise<void>;
+  logout: () => void;
+  refreshToken?: () => Promise<void>;
+}
+
+

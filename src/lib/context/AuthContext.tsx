@@ -1,17 +1,25 @@
 import { createContext } from "react";
-import type { ICredentials } from "../types/AuthTypes";
+import type { ICredentials, IUser } from "../types/AuthTypes";
 
 
-const AuthContext = createContext({
+
+
+export interface AuthContextType {
+  loggedInUser: IUser | null;
+  loading: boolean;
+  login: (credentials: ICredentials) => Promise<any>;
+  logout: () => void;
+  getLoggedInUserProfile: () => Promise<IUser>;
+}
+
+const defaultContext: AuthContextType = {
   loggedInUser: null,
-  login: async(cred: ICredentials):Promise<void> => {},
-  getLoggedInUserProfile:async(): Promise<any> => {},
-  // register: () => {},
-  // activation: () => {},
-  // forgetPassword: () => {},
-  // logout: () => {},
-  // resetPassword: () => {},
-});
+  loading: false,
+  login: async () => { throw new Error("AuthContext: login not implemented"); },
+  logout: () => {},
+  getLoggedInUserProfile: async () => { throw new Error("AuthContext: getLoggedInUserProfile not implemented"); },
+};
 
+const AuthContext = createContext<AuthContextType>(defaultContext);
 
-export default AuthContext
+export default AuthContext;
