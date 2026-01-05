@@ -13,7 +13,7 @@ import { LoginDTO } from "../../lib/dto/AuthDTO";
 
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login ,getLoggedInUserProfile } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const { setPageData } = useOutletContext<IOutletContext>();
 
@@ -25,7 +25,7 @@ export default function LoginPage() {
         "Work Smarter, Manage Better..",
       button: {
         url: "/register",
-        text: "Register",
+        text: "",
       },
     });
   }, []);
@@ -41,52 +41,21 @@ export default function LoginPage() {
      if (isLoading) return;
     setIsLoading(true);
     try {
-      console.log("=== LOGIN ATTEMPT START ===");
       //Api call to login
       await login(credentials);
-      console.log("Login response received:", login);
-      // Fetch logged in user profile
-      console.log("Fetching user profile...");
-      // const loggedInUser = await getLoggedInUserProfile();
-      console.log("Login successful for user:");
-
+      // await getLoggedInUserProfile();
       toast.success("Login successful!");
-
- 
         navigate("/admin");
 
-    } catch (error: any) {
-      console.error("=== LOGIN ERROR ===");
-      console.error("Error object:", error);
-      console.error("Error message:", error.message);
-      console.error("Error code:", error.code);
-      console.error("Error response:", error.response);
-
-      let errorMessage = "Please check your email and password and try again.";
-
-      if (error?.response?.data?.msg) {
-        errorMessage = error.response.data.msg
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.code === 401) {
-        errorMessage = "Unauthorized access. Please check your credentials.";
-      } else if (error?.code === 500) {
-        errorMessage = "Server error. Please try again later.";
-      }
-
-      toast.error("Login failed", {
-        description: errorMessage,
+    } catch (error) {
+       console.error("Login error:", error);
+      toast.error("Cannot login at this moment!", {
+        description: "Please check your credentials once before submitting.",
       });
-
-
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleCancel = () => {
-    navigate("/");
-  }
 
   return (
     <>
@@ -131,7 +100,6 @@ export default function LoginPage() {
             <div className="flex w-full gap-5">
               <button 
                 type="button"
-                onClick={handleCancel}
                 disabled={isLoading}
               className="w-full hover:bg-red-700 bg-red-600 p-2 rounded-md text-white transition hover:scale-96 cursor-pointer ">
                 Cancel

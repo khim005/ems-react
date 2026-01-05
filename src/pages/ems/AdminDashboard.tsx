@@ -42,7 +42,7 @@ function ShortcutButton({ label, icon, to }: any) {
   );
 }
 
-export default function Admin() {
+export default function AdminDashboard() {
   const {loggedInUser } = useAuth();
   return (
     <>

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface ICredentials {
   email: string;
   password: string;
@@ -28,5 +30,10 @@ export interface IAuthContext {
   logout: () => void;
   refreshToken?: () => Promise<void>;
 }
+
+export interface IMenuSingleItem{
+  label: string, 
+  icon: ReactNode, 
+  url: string}
 
 

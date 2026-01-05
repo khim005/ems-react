@@ -1,11 +1,11 @@
 import { NavLink } from "react-router";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { FaAnglesLeft, FaAnglesRight, FaChartBar, FaFile, FaUsers, FaGear } from "react-icons/fa6";
-import { FaHome } from "react-icons/fa";
+// import { FaHome } from "react-icons/fa";
 
+interface IMenuSingleItem{label: string, icon: ReactNode, url: string}
 
-
-export default function Sidebar() {
+export default function Sidebar({menu}: Readonly<{menu: Array<IMenuSingleItem>}>) {
   const [collapsed, setCollapsed] = useState(false);
   return (
     <div className={`bg-teal-900 text-white flex flex-col transition-all duration-300 ${collapsed ? "w-16" : "w-56"} min-h-screen`}>
@@ -20,13 +20,16 @@ export default function Sidebar() {
         </button>
       </div>
       <nav className="flex-1 mt-4 flex flex-col gap-2">
-          <>
-        <SidebarLink to="/dashboard" collapsed={collapsed} icon={<FaHome />} label="Dashboard" />
-        <SidebarLink to="/admin/user" collapsed={collapsed} icon={<FaUsers />} label="Users" />
-        <SidebarLink to="/admin/analytics" collapsed={collapsed} icon={<FaChartBar />} label="Analytics" />
-        <SidebarLink to="/admin/reports" collapsed={collapsed} icon={<FaFile />} label="Reports" />
-        <SidebarLink to="/admin/settings" collapsed={collapsed} icon={<FaGear />} label="Settings" />
-          </>
+          {
+          menu && menu.map((item: IMenuSingleItem, index: number) => (
+            <SidebarLink 
+              key={index} 
+              to={item.url} 
+              collapsed={collapsed}
+              icon={item.icon} 
+              label={item.label} />
+          ))
+        }
       </nav>
     </div>
   );

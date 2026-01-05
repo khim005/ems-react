@@ -2,8 +2,6 @@ import { createContext } from "react";
 import type { ICredentials, IUser } from "../types/AuthTypes";
 
 
-
-
 export interface AuthContextType {
   loggedInUser: IUser | null;
   loading: boolean;

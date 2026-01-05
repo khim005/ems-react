@@ -17,3 +17,16 @@ export interface ITextInputProps {
   control: any,
   errMsg?: string | null
 }
+
+export interface ISingleSelectOption {
+  label: string;
+  value: string;
+}
+export interface ISelectInputProps {
+  name: string;
+  options: Array<ISingleSelectOption>,
+  className?: string;
+  // eslint-disable-next-line
+  control: any;
+  errMsg?: string | null;
+}

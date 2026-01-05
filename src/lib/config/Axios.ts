@@ -15,13 +15,6 @@ const axiosInstance = axios.create({
 // Request Interceptor
 axiosInstance.interceptors.request.use((config) => {
   const token = Cookies.get("_at");
-
-  // if (import.meta.env.DEV) {
-  //   console.log(`➡️ [${config.method?.toUpperCase()}] ${config.url}`);
-  //   console.log("Token from cookies:", token ? "Exists" : "Missing");
-  //   console.log("Token preview:", token ? token.substring(0, 30) + "..." : "N/A");
-  // }
-
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
 
